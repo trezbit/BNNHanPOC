@@ -1,5 +1,5 @@
 # BNNHanPOC
-BNN - HAN: Hierarchical Self-Attention Network Proof-of-Concept/Demo
+BNN - HAN: Heterogeneous graph attention Network Proof-of-Concept/Demo
 
 ## BNN  - HAN Architecture & Pipeline
 
@@ -82,9 +82,10 @@ This model combines Brain Imaging Data Structure (BIDS) compliant datasets from 
 
 ### Other References
 
-Following resources were referenced in implementing this demo:
+The following resources were referenced in implementing this demo:
 
 > X. Fu, J. Zhang, Z. Meng, and I. King. MAGNN: Metapath Aggregated Graph Neural Network for Heterogeneous Graph Embedding. Apr. 2020. DOI: 10.1145/3366423.3380297. https://arxiv.org/abs/2002.01680.
-> J. Liu, Y. Wang, S. Xiang, and C. Pan. HAN: An Efficient Hierarchical Self-Attention Network for Skeleton-Based Gesture Recognition. arXiv, 2021. DOI: 10.48550/ARXIV.2106.13391. https://arxiv.org/abs/2106.13391.
+>
+> Xiao Wang, Houye Ji, Chuan Shi, Bai Wang, Yanfang Ye, Peng Cui, and Philip S Yu. 2019. https://par.nsf.gov/servlets/purl/10135600,
 
    
