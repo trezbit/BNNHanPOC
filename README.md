@@ -3,7 +3,7 @@ BNN - HAN: Heterogeneous graph attention Network Proof-of-Concept/Demo
 
 ## BNN  - HAN Architecture & Pipeline
 
-<img src="./docs/images/helper-processing.drawio.png" alt="processing.repo" style="zoom:80%;" />
+<img src="./docs/images/han-proto.jpg" alt="processing.repo" style="zoom:80%;" />
 
 ## PyTorch HeteroData - BNNHDataSet
 
