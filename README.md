@@ -63,27 +63,37 @@ Command-line options/settings are available for testing various BNN HAN POC demo
 
 `python demo.py demo --base`
 
-> PyTorch Geometry POC demos with BNNHDataSet: {}
-> ...
->
-> Epoch: 000, Loss: 2.0134, Train: 0.5845, Val: 0.2500, Test: 0.4375
-> ...
-> Epoch: 180, Loss: 0.3241, Train: 0.9155, Val: 0.8750, Test: 0.8125
->
-> Test accuracy: 81.25%
->
->               	precision    	recall  	f1-score   	support
->
-> Chronic-Pain     	0.8000	       0.8889    	0.8421         	9
-> Control     	 	0.8333    	    0.7143    	0.7692         	7
->
->     accuracy        0.8125        16
->    macro avg      	0.8167    	    0.8016    	0.8057        	16
-> weighted avg    	0.8146       	 0.8125    	0.8102        	16
->
-> ----------------------------------------
->
-> End of demo session... demo
+```
+PyTorch Geometry POC demos with BNNHDataSet: {}
+Bypassed Downloading the dataset -- Using raw files @ GitHub Repo
+/home/zeyno/workspace-wsl/bnn-poc-demo/bnn-han-poc/.venv/lib/python3.10/site-packages/torch_geometric/edge_index.py:863: UserWarning: Sparse CSR tensor support is in beta state. If you miss a functionality in the sparse tensor support, please submit a feature request to https://github.com/pytorch/pytorch/issues. (Triggered internally at ../aten/src/ATen/SparseCsrTensorImpl.cpp:53.)
+  return torch.sparse_csr_tensor(
+---------------------------------------- 
+
+Epoch: 000, Loss: 2.0134, Train: 0.5845, Val: 0.2500, Test: 0.4375
+Epoch: 020, Loss: 0.6253, Train: 0.7535, Val: 0.5000, Test: 0.5625
+Epoch: 040, Loss: 0.6201, Train: 0.8239, Val: 0.8750, Test: 0.6875
+Epoch: 060, Loss: 0.5318, Train: 0.8451, Val: 0.7500, Test: 0.5625
+Epoch: 080, Loss: 0.3640, Train: 0.8803, Val: 0.8750, Test: 0.5625
+Epoch: 100, Loss: 0.4007, Train: 0.9014, Val: 0.8750, Test: 0.6875
+Epoch: 120, Loss: 0.3281, Train: 0.9014, Val: 0.7500, Test: 0.6875
+Epoch: 140, Loss: 0.3865, Train: 0.8944, Val: 0.8750, Test: 0.7500
+Epoch: 160, Loss: 0.4467, Train: 0.9155, Val: 0.8750, Test: 0.8125
+Epoch: 180, Loss: 0.3310, Train: 0.9155, Val: 0.8750, Test: 0.8125
+Test accuracy: 81.25%
+---------------------------------------- 
+
+              precision    recall  f1-score   support
+
+Chronic-Pain     0.8000    0.8889    0.8421         9
+     Control     0.8333    0.7143    0.7692         7
+
+    accuracy                         0.8125        16
+   macro avg     0.8167    0.8016    0.8057        16
+weighted avg     0.8146    0.8125    0.8102        16
+
+---------------------------------------- 
+```
 
 
 
@@ -91,25 +101,27 @@ Command-line options/settings are available for testing various BNN HAN POC demo
 
 `python demo.py build --show`
 
-> PyTorch Geometry BNNHDataSet dataset build utils: {}
-> Bypassed Downloading the dataset -- Using raw files @ GitHub Repo
-> BNNHDataSet: HeteroData(
->   SUBJECT={
->     x=[166, 1],
->     y=[166],
->     train_mask=[166],
->     test_mask=[166],
->     val_mask=[166],
->   },
->   READ_LOC={ x=[8727, 19] },
->   WAVE_ABP={ x=[19274, 2] },
->   (SUBJECT, HAS_READ, READ_LOC)={ edge_index=[2, 8727] },
->   (READ_LOC, HAS_ABP, WAVE_ABP)={ edge_index=[2, 19274] },
->   (READ_LOC, rev_HAS_READ, SUBJECT)={ edge_index=[2, 8727] },
->   (WAVE_ABP, rev_HAS_ABP, READ_LOC)={ edge_index=[2, 19274] }
-> )
->
-> End of demo session... build
+```
+PyTorch Geometry BNNHDataSet dataset build utils: {}
+Bypassed Downloading the dataset -- Using raw files @ GitHub Repo
+BNNHDataSet: HeteroData(
+  SUBJECT={
+     x=[166, 1],
+     y=[166],
+     train_mask=[166],
+     test_mask=[166],
+     val_mask=[166],
+   },
+   READ_LOC={ x=[8727, 19] },
+   WAVE_ABP={ x=[19274, 2] },
+  (SUBJECT, HAS_READ, READ_LOC)={ edge_index=[2, 8727] },
+  (READ_LOC, HAS_ABP, WAVE_ABP)={ edge_index=[2, 19274] },
+  (READ_LOC, rev_HAS_READ, SUBJECT)={ edge_index=[2, 8727] },
+  (WAVE_ABP, rev_HAS_ABP, READ_LOC)={ edge_index=[2, 19274] }
+)
+
+End of demo session... build
+```
 
 ## Getting help
 
