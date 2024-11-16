@@ -102,7 +102,7 @@ class BNNHANPOC(object):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         data, model = self.data.to(str(device)), model.to(str(device))
 
-        print("Loading BNNHDataSet", "-"*40, "\n", self.data)
+        #print("Loading BNNHDataSet", "-"*40, "\n", self.data)
         print("-"*40, "\n")
         self.fit(model, optimizer, data)
         test_acc = self.test(data['SUBJECT'].test_mask, model, data)

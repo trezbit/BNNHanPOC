@@ -11,11 +11,8 @@ def build_dataset(params):
     if params == '{}':
         db = BNNHDataSet(root=BNNHDSDIR)
         print("BNNHDataSet:", db._data)
-    elif params == 'force':
-        db = BNNHDataSet(root=BNNHDSDIR, force_rebuild=True)
-        print("BNNHDataSet:", db._data)
     else:
-        print("PyTorch Geometry BNNHDataSet dataset build utils")
+        print("Unknown option for PyTorch Geometry BNNHDataSet dataset build utils")
 
 def run_poc(params):
     '''PyTorch Geometry GNN POC demos'''
@@ -24,7 +21,7 @@ def run_poc(params):
         poc = BNNHANPOC()
         poc.run()
     else:
-        print("PyTorch Geometry POC demos with BNNHDataSet")
+        print("Unknown option for PyTorch Geometry POC demos with BNNHDataSet")
 
 def parse_args():
     """CLI Argument parser for the application"""
@@ -33,7 +30,7 @@ def parse_args():
 
     tester = subparser.add_parser("demo", help="BRAINGNNet POC/demos")
     builder = subparser.add_parser("build", help="BNNHDS Hetero DataSet build utilities")
-    builder.add_argument('--force', help='Re-build BNNDDS Hetero Dataset from raw data', type=str, required=False)
+    builder.add_argument('--show', help='BNNDDS Hetero Dataset from raw data', nargs="?", const="{}", type=str, required=False)
 
     convertgroup1 = tester.add_mutually_exclusive_group(required=True)
     convertgroup1.add_argument("--base", help="Node-Classification HAN implementation Demo", nargs="?", const="{}", type=str)
@@ -52,8 +49,8 @@ def run_session(args):
         run_poc(args.base)
     elif args.command == "demo" and args.adv is not None:
         print("Currently unimplemented:", args.adv)
-    elif args.command == "build" and args.base is not None:
-        build_dataset(args.force)
+    elif args.command == "build" and args.show is not None:
+        build_dataset(args.show)
     else:
         print("Unknown command option for POC: ", args.command)
     print("\nEnd of demo session...", args.command)

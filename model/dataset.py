@@ -34,16 +34,16 @@ class BNNHDataSet(InMemoryDataset):
         force_reload (bool, optional): Whether to re-process the dataset.
             (default: :obj:`False`)
 
-        REF: https://www.dropbox.com/s/xxxxxxx/BNNHDataSet_processed.zip?dl=1
+        RAW DATA available for download at: https://osf.io/ge27r/
     """
-    url = 'https://www.dropbox.com/s/xxxxxxx/BNNHDataSet_processed.zip?dl=1'
+    url = 'https://files.osf.io/v1/resources/rsg4h/providers/osfstorage/6737a3a9f4fc990bb8b284fd'
 
     def __init__(
         self,
         root: str,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
-        force_reload: bool = True,
+        force_reload: bool = False,
         ignoredegree: bool = True
     ) -> None:
         self.ignoredegree = ignoredegree
@@ -65,11 +65,9 @@ class BNNHDataSet(InMemoryDataset):
 
     def download(self) -> None:
         '''Download the dataset'''
-        print("Bypassed: Downloading the dataset")
+        print("Bypassed Downloading the dataset -- Using raw files @ GitHub Repo")
         return
-        # path = download_url(self.url, self.raw_dir)
-        # extract_zip(path, self.raw_dir)
-        # os.remove(path)
+
 
     def process(self) -> None:
         import scipy.sparse as sp
