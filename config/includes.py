@@ -1,4 +1,5 @@
-'''Module to define constants and config functions for the project'''
+"""Module to define constants and config functions for the project"""
+
 import os
 from pathlib import Path
 
@@ -10,5 +11,6 @@ BNNHDSDIR = os.path.join(DATADIR, "bnnhds")
 TORCHPTDIR = os.path.join(DATADIR, "torch")
 
 # Graph data public sets -- for cloud graph db access
-PUBLIC_GRAPH_HGNN_ROOT = "https://raw.githubusercontent.com/trezbit/bnn-model-builder/master/graphdb/csv"
-
+PUBLIC_GRAPH_HGNN_ROOT = (
+    "https://raw.githubusercontent.com/trezbit/bnn-model-builder/master/graphdb/csv"
+)
