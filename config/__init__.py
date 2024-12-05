@@ -1,3 +1,3 @@
-'''BrainNet Graph Database Module'''
-from config.includes import *
+"""BrainNet Graph Database Module"""
 
+from config.includes import *
