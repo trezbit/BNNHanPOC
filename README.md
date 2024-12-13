@@ -1,178 +1,240 @@
-# BNN-Han-POC
-BNN - HAN: Heterogeneous graph attention Network Proof-of-Concept - Demo
+# BNN-HAN-POC
 
-OSF Project: https://osf.io/z63jw/?view_only=d68a9e47582b44ccb816c29dcf206e5e
+Heterogeneous Graph Attention Network (HAN) Proof-of-Concept for EEG-Based Chronic Pain Detection
 
-Background: [EEG-Pain-BioMarker.discovery-graph-model-article.pdf](./docs/EEG-Pain-BioMarker.discovery-graph-model-article.pdf)
+## Abstract
 
-## BNN  - HAN Architecture & Model Processing Pipeline
+This project introduces a novel approach to chronic pain detection leveraging electroencephalographic (EEG) biomarkers. By utilizing a Heterogeneous Graph Attention Network (HAN), the BNN-HAN framework integrates brain topology with EEG channel reads and features such as Absolute Band Power (ABP). Initial findings demonstrate the framework's potential in improving chronic pain detection through a resource-efficient, data-driven methodology.
 
-This POC project evaluates the feasibility of using Heterogeneous Graph Attention Networks (HAN) to address the complexities of EEG signal analysis and to improve the accuracy of GNN used for chronic pain detection. The implementation expands to HAN's message-passing and attention mechanisms for a binary classification task: distinguishing chronic pain states from control (no pain) conditions. 
+## OSF Project
 
-The POC employs two public datasets: cpCGX-BIDS (chronic pain) and MBB LEMON (control) for training the GNN model, adopts a two-tiered self-attention architecture, and implements a prediction module leveraging node and semantic level aggregators and meta-path strategies borrowing from [1: Wang, X, et.al]. 
+[BNN-HAN-POC on OSF](https://osf.io/z63jw/?view_only=d68a9e47582b44ccb816c29dcf206e5e)
 
-<img src="./docs/images/han-proto.jpg" alt="processing.repo" style="zoom:80%;" />
+## Background
 
-As explored in the parent OSF project:  [BRAINGNNet: Exploring Graph Models for Chronic Pain Detection through EEG Biomarkers](https://osf.io/pfx32/), by transforming EEG channel readings into graph representations, the approach simplifies predictive modeling, enabling the learner to identify pain dissipation patterns and pathways across the brain topology. The proposed approach captures Absolute Band Power (ABP) activation patterns across neural regions, emphasizing an optimally expressive graph structure to represent the brain activity of the study participants.
+Chronic pain is a prevalent and debilitating condition that affects millions globally. The subjective nature of chronic pain assessment, typically reliant on self-reported measures, poses challenges in diagnosis and treatment. To address these limitations, this project leverages EEG biomarkers, such as Absolute Band Power (ABP), which provide objective, quantifiable insights into brain activity patterns associated with chronic pain.
 
+Absolute Band Power measures brain wave activity across frequency bands (Delta, Theta, Alpha, Beta, Gamma) and has been shown to correlate with chronic pain states. By integrating ABP data with brain topology using a graph-based approach, this project aims to identify distinct neural patterns and classify chronic pain states effectively.
 
+The BNN-HAN framework employs a Heterogeneous Graph Attention Network (HAN) to analyze EEG-derived graphs, enabling the extraction of meaningful features from complex brain activity patterns. This approach not only enhances the accuracy of pain detection but also provides a scalable and resource-efficient solution for clinical applications.
 
-## PyTorch HeteroData - BNNHDataSet
+[EEG-Pain-BioMarker.discovery-graph-model-article.pdf](./docs/EEG-Pain-BioMarker.discovery-graph-model-article.pdf)
 
-|                      BNN Graph DB Model                      |                        BNN HAN Model                         |
-| :----------------------------------------------------------: | :----------------------------------------------------------: |
-| <img src="./docs/images/model.jpg" alt="processing.repo" style="zoom:30%;" /> | <img src="./docs/images/han-model.jpg" alt="processing.repo" style="zoom:90%;" /> |
+---
 
-A custom Heterogenous [PyTorch DataSet](./model/dataset.py): `BNNHDataSet` has been created  based on Neo4J Graph Database - BNN Model topology introduced in [BNN-MODEL-BUILDER](https://github.com/trezbit/bnn-model-builder), with following adjustments:
+## 1. Introduction
 
-1. As part of feature engineering, for robust scaling and normalization of the discriminative ABP thresholds, calibrated the computed reads  for the study common channels using statistical measures of center and spread (Median + Standard Deviation) 
-2. For improved GNN efficiency, compressed the original heterogenous graph model to capture three Node types and 2 edges with emphasis on the normalized and scaled node features from (1), eliminating insignificant ABP edges below the thresholds in the process.
-3. Created random train, test and validate sets for the demo purposes.
+Chronic pain affects millions globally, with diagnosis and treatment often hampered by its subjective nature. Current assessments rely on self-reporting, which lacks objectivity and consistency. This project offers an EEG-based, data-driven solution to detect chronic pain states using:
 
-Given the small size of the data set, the demo version leverages the raw data files within this repo, and bypasses the download process. 
+- **BRAINGNNet Framework**: Graph-based modeling integrating EEG data with brain topology and features like Absolute Band Power (ABP).
+- **BNNHAN Model**: A Heterogeneous Graph Attention Network (HAN) using attention mechanisms to analyze EEG-derived graph representations and distinguish chronic pain states from control conditions.
+- **Open-Source Tools**: Leveraging publicly available datasets and open-source pipelines for reproducible research.
 
-*RAW DATA available for download at OSF for download: https://osf.io/ge27r/*
+The repository includes code and documentation for data preprocessing, model training, and evaluation to advance EEG-based chronic pain detection.
 
-## Runtime Env and Dependencies
+---
 
-*Tested on*: Ubuntu 22.04 - *Python Version*: 3.10.12 
+## 2. Datasets
 
-*Requires:* 
+### 2.1 cpCGX-BIDS: Chronic Pain Dataset
 
-- Python version 3.10 or greater 
-- Pytorch 
+- **Description**: Resting-state EEG from 74 chronic pain patients.
+- **Conditions**: Eyes Closed (EC) and Eyes Open (EO).
+- **Electrodes**: 29 channels (10–10 system).
+- **Recording Period**: March – November 2022.
+- **Location**: Klinikum Rechts der Isar, Munich, Germany.
+- **Source**: [DOI:10.1038/s41597-023-02525-0](https://doi.org/10.1038/s41597-023-02525-0)
 
-## Utilities
+### 2.2 MBB LEMON: Control Dataset
 
-Command-line options/settings are available for testing various BNN HAN POC demo and DataSet utilities
+- **Description**: Resting-state EEG from 228 participants (92 used).
+- **Conditions**: EC and EO.
+- **Electrodes**: 59 channels with digitized locations.
+- **Source**: [MPI LEMON Project](https://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html)
 
-`python demo.py -h`
+### 2.3 Preprocessing
 
-> usage: demo.py [-h] {demo,build} ...
-> BNN HAN Model POC Demo Utilities
+Standardized preprocessing via DISCOVER-EEG includes:
 
-> positional arguments:
-> {demo,build}
->  demo        BRAINGNNet POC/demos
->  build       BNNHDS Hetero DataSet build utilities
-> 
->   options:
->    -h, --help    show this help message and exit
+- Noise removal and high-pass filtering.
+- ICA-based artifact correction.
+- ABP computation across Delta, Theta, Alpha, Beta, and Gamma frequency bands.
 
-*Running the base demo*
+### 2.4 Dataset Comparison Table
 
-`python demo.py demo --base`
+| Dataset    | Subjects      | Electrodes | Frequency Bands                  | Preprocessing Tools |
+| ---------- | ------------- | ---------- | -------------------------------- | ------------------- |
+| cpCGX-BIDS | 74            | 29         | Delta, Theta, Alpha, Beta, Gamma | DISCOVER-EEG        |
+| MBB LEMON  | 228 (92 used) | 59         | Delta, Theta, Alpha, Beta, Gamma | DISCOVER-EEG        |
 
-```
-PyTorch Geometry POC demos with BNNHDataSet: {}
-Bypassed Downloading the dataset -- Using raw files @ GitHub Repo
-/home/zeyno/workspace-wsl/bnn-poc-demo/bnn-han-poc/.venv/lib/python3.10/site-packages/torch_geometric/edge_index.py:863: UserWarning: Sparse CSR tensor support is in beta state. If you miss a functionality in the sparse tensor support, please submit a feature request to https://github.com/pytorch/pytorch/issues. (Triggered internally at ../aten/src/ATen/SparseCsrTensorImpl.cpp:53.)
-  return torch.sparse_csr_tensor(
----------------------------------------- 
+### 2.5 Graph Representation
 
-Epoch: 000, Loss: 2.0134, Train: 0.5845, Val: 0.2500, Test: 0.4375
-Epoch: 020, Loss: 0.6253, Train: 0.7535, Val: 0.5000, Test: 0.5625
-Epoch: 040, Loss: 0.6201, Train: 0.8239, Val: 0.8750, Test: 0.6875
-Epoch: 060, Loss: 0.5318, Train: 0.8451, Val: 0.7500, Test: 0.5625
-Epoch: 080, Loss: 0.3640, Train: 0.8803, Val: 0.8750, Test: 0.5625
-Epoch: 100, Loss: 0.4007, Train: 0.9014, Val: 0.8750, Test: 0.6875
-Epoch: 120, Loss: 0.3281, Train: 0.9014, Val: 0.7500, Test: 0.6875
-Epoch: 140, Loss: 0.3865, Train: 0.8944, Val: 0.8750, Test: 0.7500
-Epoch: 160, Loss: 0.4467, Train: 0.9155, Val: 0.8750, Test: 0.8125
-Epoch: 180, Loss: 0.3310, Train: 0.9155, Val: 0.8750, Test: 0.8125
-Test accuracy: 81.25%
----------------------------------------- 
+The BRAINGNNet graph representation is built to capture the brain's topology and EEG activity through nodes and edges. These components are defined as follows:
 
-              precision    recall  f1-score   support
+- **Nodes**:
 
-Chronic-Pain     0.8000    0.8889    0.8421         9
-     Control     0.8333    0.7143    0.7692         7
+  - **SUBJECT**: Represents individual participants. Each node includes labels indicating chronic pain status and additional features such as degree.
+  - **READ_LOC**: Represents EEG read locations corresponding to electrode positions. These nodes include features like channel type, brain region tags, and coordinates (e.g., latitude, longitude).
+  - **WAVE_ABP**: Represents the Absolute Band Power (ABP) features extracted from EEG signals. These nodes include attributes like wave type and adaptive weights.
 
-    accuracy                         0.8125        16
-   macro avg     0.8167    0.8016    0.8057        16
-weighted avg     0.8146    0.8125    0.8102        16
+- **Edges**:
+  - **HAS_READ**: Connects SUBJECT nodes to READ_LOC nodes, representing which brain regions were recorded for each participant.
+  - **HAS_ABP**: Connects READ_LOC nodes to WAVE_ABP nodes, representing the ABP features measured at specific EEG read locations.
 
----------------------------------------- 
-```
+This graph structure effectively integrates EEG-derived features with brain topology, enabling the model to analyze relationships between brain regions and neural activity for chronic pain detection.
 
+---
 
+## 3. Architecture and Processing
 
-*Viewing the Custom HeteroData BNNHDataSet:*
+The BNN-HAN pipeline integrates EEG-derived features into a heterogeneous graph structure and employs a Heterogeneous Graph Attention Network (HAN) for chronic pain detection. The key stages are as follows:
 
-`python demo.py build --show`
+### 3.1 Pipeline Overview
 
-```
-PyTorch Geometry BNNHDataSet dataset build utils: {}
-Bypassed Downloading the dataset -- Using raw files @ GitHub Repo
-BNNHDataSet: HeteroData(
-  SUBJECT={
-     x=[166, 1],
-     y=[166],
-     train_mask=[166],
-     test_mask=[166],
-     val_mask=[166],
-   },
-   READ_LOC={ x=[8727, 19] },
-   WAVE_ABP={ x=[19274, 2] },
-  (SUBJECT, HAS_READ, READ_LOC)={ edge_index=[2, 8727] },
-  (READ_LOC, HAS_ABP, WAVE_ABP)={ edge_index=[2, 19274] },
-  (READ_LOC, rev_HAS_READ, SUBJECT)={ edge_index=[2, 8727] },
-  (WAVE_ABP, rev_HAS_ABP, READ_LOC)={ edge_index=[2, 19274] }
-)
-
-End of demo session... build
+```mermaid
+graph TD
+    A[Start: Data Loading] --> B[Data Preprocessing]
+    B --> C[Feature Engineering]
+    C --> D[Graph Construction]
+    D --> E[Define Meta-Paths]
+    E --> F[Initialize HAN Model]
+    F --> G[Train Model]
+    G --> H{Evaluate Model}
+    H --> I[Test Accuracy]
+    H --> J[Performance Report]
+    I --> K[Save Results]
+    J --> K
+    K[End: Output Results]
 ```
 
-## Getting help
+### 3.2 Heterogeneous Graph Attention Network (HAN)
 
-If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
+#### Meta-Paths
 
-## Open source licensing info
+Meta-paths guide information flow within the HAN model by linking nodes across different types and relationships:
 
-1. [LICENSE](LICENSE)
+- `Φ0`: SUBJECT → READ_LOC → WAVE_ABP, aggregates ABP features associated with specific EEG read locations.
+- `Φ1`: WAVE_ABP → READ_LOC → SUBJECT, integrates EEG signal characteristics back into the subject-level context.
 
-----
+```mermaid
+graph TD
+    MP1[Meta-Path Φ0: SUBJECT → READ_LOC → WAVE_ABP] --> |Attention| A1[Node-Level Attention]
+    MP2[Meta-Path Φ1: WAVE_ABP → READ_LOC → SUBJECT] --> |Attention| A1
+    A1 --> S1[Semantic-Level Attention]
+    S1 --> O[Output Embeddings]
+```
 
-## Credits and References
+#### Attention Mechanisms
 
-### EEG Study Datasets
+- **Node-Level Attention**: Focuses on critical nodes along meta-paths, enabling the model to identify relevant EEG channels and brain regions.
+- **Semantic-Level Attention**: Aggregates information across meta-paths, interpreting relationships between ABP activations and electrode correlations.
 
-The graph model in this repository was build to assess the effectiveness of a HGNN learner and inference framework aligning the brain topology with the International 10–10 system for EEG electrode placement and Absolute Band Powers as the key EEG feature. 
+This hierarchical attention mechanism enhances classification accuracy by prioritizing critical features and connections, improving performance in distinguishing chronic pain from control states.
 
-This model combines Brain Imaging Data Structure (BIDS) compliant datasets from two critical EEG studies:
+### 3.3 Graph Representation
 
-- **cpCGX-BIDS: Chronic Pain Data EEG Dataset** (Technical University of Munich [Zebhauser])
+```mermaid
+graph LR
+    A[SUBJECT Nodes] -->|HAS_READ| B[READ_LOC Nodes]
+    B -->|HAS_ABP| C[WAVE_ABP Nodes]
+    B -->|Metadata Links| D[Additional Features]
+```
 
-  - Raw resting-state EEG data [conditions: eyes closed (EC) or eyes open(EO), Electrodes: 29] in BIDS format for 74 chronic pain patients
-  - Recorded between March 2022 and November 2022 in the Klinikum Rechts der Isar (Munich, Germany)
+- **Feature Engineering**: Robust scaling and normalization of ABP features.
+- **Graph Simplification**: Reduced to essential nodes and edges for efficiency.
+- **Splitting**: Balanced training, validation, and test sets.
 
-  *More At*: https://doi.org/10.1038/s41597-023-02525-0
+---
 
-- **MBB LEMON: Control (Healthy) EEG Dataset** (Max Planck Institut Leipzig [Babayan])
+## 4. Implementation Details
 
-  - Preprocessed resting state EEG data [conditions: eyes closed (EC) or eyes open(EO), Electrodes: 59] in BIDS format for 228 Participants (from which we sampled 92). 
-  - Digitized EEG channel locations Polhemus leveraging PATRIOT Motion Tracking System (Polhemus, Colchester, VT, USA) localizer with the Brainstorm toolbox.
+### Dataset Transformations
 
-  *More At*: https://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html
+To construct the BRAINGNNet graph from raw EEG data, the following transformations are applied:
 
-### GNN Architecture 
+1. **Node Creation**:
 
-#### PyTorch Geometric
-> Fey, M., & Lenssen, J. E. (2019). Fast Graph Representation Learning with PyTorch Geometric. ArXiv. https://arxiv.org/abs/1903.02428
+   - SUBJECT nodes are created for each participant, annotated with their chronic pain status.
+   - READ_LOC nodes are derived from EEG electrode positions, with features including channel type and brain region tags.
+   - WAVE_ABP nodes are constructed for each ABP frequency band, with attributes like wave type and adaptive weights.
 
-#### Learning from Heterogeneous Graphs
+2. **Edge Construction**:
 
-> Labonne, Maxime (2023). Hands-On Graph Neural Networks Using Python: Practical techniques and architectures for building powerful graph and deep learning apps with PyTorch
-> https://github.com/PacktPublishing/Hands-On-Graph-Neural-Networks-Using-Python
+   - HAS_READ edges link SUBJECT nodes to READ_LOC nodes based on the brain regions recorded for each participant.
+   - HAS_ABP edges link READ_LOC nodes to WAVE_ABP nodes to represent ABP activity at specific locations.
 
-### Other References
+3. **Feature Engineering**:
+   - Normalization and scaling are applied to ABP values to ensure consistent feature ranges.
+   - Graph simplifications are performed to retain essential nodes and edges, reducing computational overhead.
 
-The following resources were referenced in implementing this demo:
+### Environment
 
-> [1] Xiao Wang, Houye Ji, Chuan Shi, Bai Wang, Yanfang Ye, Peng Cui, and Philip S Yu. Heterogeneous Graph Attention Network. 2019. https://par.nsf.gov/servlets/purl/10135600,
->
-> [2] X. Fu, J. Zhang, Z. Meng, and I. King. MAGNN: Metapath Aggregated Graph Neural Network for Heterogeneous Graph Embedding. Apr. 2020. DOI: 10.1145/3366423.3380297. https://arxiv.org/abs/2002.01680.
->
-> 
+- **OS**: Ubuntu 22.04 or Windows 10/11.
+- **Python Version**: 3.10+
 
-   
+### Dependencies
+
+- `torch`, `torch-geometric`, and others from `requirements.txt`.
+
+### Installation
+
+```bash
+git clone https://github.com/trezbit/bnn-han-poc.git
+cd bnn-han-poc
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+```
+
+### Running the Demo
+
+```bash
+python demo.py demo --base
+```
+
+---
+
+## 5. Results
+
+### Initial Findings
+
+| Metric       | H-GAT | BNNHAN |
+| ------------ | ----- | ------ |
+| Accuracy     | 56%   | 81%    |
+| F1-Score     | 72%   | 84%    |
+| Chronic-Pain | 0.562 | 0.800  |
+| Control      | 0.000 | 0.833  |
+
+- Key Patterns: Increased Gamma, Theta, and Alpha power linked to chronic pain.
+
+---
+
+## 6. Future Directions
+
+- **Expanded Data**: Incorporating more datasets and multimodal inputs.
+- **Deployment**: Optimizing for real-time and edge-computing applications.
+- **Transfer Learning**: Adapting to individual-specific patterns.
+- **Graph-Level Classification**: Exploring classification tasks at the graph level to identify overarching patterns and improve model generalization.
+- **Multi-Label Chronic Pain Detection**: Extending the model to detect multiple chronic pain types simultaneously, enhancing its clinical utility.
+- **Larger Datasets**: Leveraging larger datasets to improve the robustness and accuracy of the model, addressing potential overfitting and improving real-world applicability.
+
+---
+
+## 7. Getting Help
+
+For questions or issues, open an issue in the repository’s tracker.
+
+---
+
+## 8. License
+
+See [LICENSE](LICENSE).
+
+---
+
+## 9. References
+
+- **cpCGX-BIDS**: [DOI:10.1038/s41597-023-02525-0](https://doi.org/10.1038/s41597-023-02525-0)
+- **MBB LEMON**: [MPI LEMON Project](https://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html)
+- **Heterogeneous Graph Attention Network**: Wang et al. (2019).
