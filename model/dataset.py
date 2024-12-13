@@ -1,3 +1,32 @@
+"""
+This module defines the `BNNHDataSet` class, which provides a PyTorch Geometric
+heterogeneous dataset for EEG-based chronic pain detection using graph neural networks.
+
+The dataset integrates EEG data from chronic pain patients and healthy controls,
+transforming them into a graph structure that aligns brain topology with EEG electrode
+placements and Absolute Band Power (ABP) features across different frequency bands.
+
+Node Types:
+- SUBJECT: Represents individual participants with labels indicating chronic pain status.
+- READ_LOC: Represents EEG read locations corresponding to electrode positions.
+- WAVE_ABP: Represents the ABP features extracted from EEG signals.
+
+Edge Types:
+- HAS_READ: Connects SUBJECT nodes to READ_LOC nodes.
+- HAS_ABP: Connects READ_LOC nodes to WAVE_ABP nodes.
+
+The `BNNHDataSet` class processes the raw data files and constructs a `HeteroData` object
+with all node features, edge indices, and labels necessary for training a Heterogeneous
+Graph Attention Network (HAN) model.
+
+Datasets Used:
+- cpCGX-BIDS: EEG data from chronic pain patients.
+- MBB LEMON: EEG data from healthy control subjects.
+
+The dataset is designed to facilitate research in EEG-based chronic pain detection by
+providing a ready-to-use graph structure compatible with PyTorch Geometric.
+"""
+
 import os.path as osp
 from typing import Callable, Optional, Union, List, Tuple, Dict
 
@@ -6,22 +35,46 @@ import torch
 from torch_geometric.transforms import ToUndirected
 from torch_geometric.data import HeteroData, InMemoryDataset
 
+
 from model.hgtypes import NodeType, RelationType
 from utils.encoders import TagEncoder, IdentityEncoder
 
 
 class BNNHDataSet(InMemoryDataset):
-    r"""BRAINGNNet Data Set from:  https://osf.io/pfx32/
-    BNNDB is a heterogeneous graph containing three types of entities - SUBJECT
-    (166 nodes), READ_LOC (8,727 nodes), and WAVE_ABP (19,274 nodes).
-    The SUBJECTS are divided into two classes according to chronic pain status.
+    r"""
+    `BNNHDataSet` is a PyTorch Geometric `InMemoryDataset` for EEG-based chronic pain detection using graph neural networks.
 
-    RAW DATA available for download at: https://osf.io/ge27r/
+    The dataset integrates EEG data from chronic pain patients and healthy controls,
+    transforming them into a graph structure that aligns brain topology with EEG electrode
+    placements and Absolute Band Power (ABP) features across different frequency bands.
+
+    **Node Types:**
+    - **SUBJECT**: Represents individual participants with labels indicating chronic pain status.
+    - **READ_LOC**: Represents EEG read locations corresponding to electrode positions.
+    - **WAVE_ABP**: Represents the ABP features extracted from EEG signals.
+
+    **Edge Types:**
+    - **HAS_READ**: Connects SUBJECT nodes to READ_LOC nodes.
+    - **HAS_ABP**: Connects READ_LOC nodes to WAVE_ABP nodes.
+
+    The dataset processes raw CSV files to construct a `HeteroData` object compatible with
+    PyTorch Geometric's heterogeneous graph neural network models.
+
+    Args:
+        root (str): Root directory where the dataset should be saved.
+        transform (Optional[Callable], optional): A function/transform that takes in a
+            `torch_geometric.data.HeteroData` object and returns a transformed version.
+            The data object will be transformed before every access. Defaults to `None`.
+        pre_transform (Optional[Callable], optional): A function/transform that takes in a
+            `torch_geometric.data.HeteroData` object and returns a transformed version.
+            The data object will be transformed before being saved to disk. Defaults to `None`.
+        pre_filter (Optional[Callable], optional): A function that takes in a
+            `torch_geometric.data.HeteroData` object and returns a boolean value, indicating
+            whether the data object should be included in the final dataset. Defaults to `None`.
+        log (bool, optional): Whether to log the progress. Defaults to `True`.
+        force_reload (bool, optional): Whether to re-process the dataset even if processed files exist. Defaults to `False`.
+        ignoredegree (bool, optional): Whether to ignore the 'degree' feature for SUBJECT nodes. Defaults to `True`.
     """
-
-    url: str = (
-        "https://files.osf.io/v1/resources/rsg4h/providers/osfstorage/6737a3a9f4fc990bb8b284fd"
-    )
 
     def __init__(
         self,
@@ -33,22 +86,17 @@ class BNNHDataSet(InMemoryDataset):
         force_reload: bool = False,
         ignoredegree: bool = True,
     ) -> None:
-        """Initializes the BNNHDataSet.
+        """
+        Initialize the `BNNHDataSet`.
 
         Args:
             root (str): Root directory where the dataset should be saved.
-            transform (Optional[Callable], optional): A function/transform that takes in a
-                `torch_geometric.data.HeteroData` object and returns a transformed version.
-                The data object will be transformed before every access. Defaults to None.
-            pre_transform (Optional[Callable], optional): A function/transform that takes in a
-                `torch_geometric.data.HeteroData` object and returns a transformed version.
-                The data object will be transformed before being saved to disk. Defaults to None.
-            pre_filter (Callable, optional): A function/transform that takes in a
-                `torch_geometric.data.HeteroData` object and returns a boolean value, indicating
-                whether the data object should be included in the final dataset. Defaults to None.
-            log (bool, optional): Whether to log the progress. Defaults to True.
-            force_reload (bool, optional): Whether to re-process the dataset. Defaults to False.
-            ignoredegree (bool, optional): Whether to ignore the degree feature for SUBJECT nodes. Defaults to True.
+            transform (Optional[Callable], optional): Function to transform the data object before every access. Defaults to `None`.
+            pre_transform (Optional[Callable], optional): Function to transform the data object before saving to disk. Defaults to `None`.
+            pre_filter (Optional[Callable], optional): Function to filter data objects before saving to disk. Defaults to `None`.
+            log (bool, optional): Whether to log the progress. Defaults to `True`.
+            force_reload (bool, optional): Whether to re-process the dataset even if processed files exist. Defaults to `False`.
+            ignoredegree (bool, optional): Whether to ignore the 'degree' feature for SUBJECT nodes. Defaults to `True`.
         """
         self.ignoredegree: bool = ignoredegree
         super().__init__(
@@ -62,9 +110,11 @@ class BNNHDataSet(InMemoryDataset):
         self.load(self.processed_paths[0], data_cls=HeteroData)
 
     @property
-    def raw_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        """The name of the files in the :obj:`self.raw_dir` folder that must
-        be present in order to skip downloading.
+    def raw_file_names(self) -> List[str]:
+        """List of raw file names expected to be found in `self.raw_dir`.
+
+        Returns:
+            List[str]: List of file names required for processing the dataset.
         """
         return [
             "nSUBJECT.csv",
@@ -77,19 +127,30 @@ class BNNHDataSet(InMemoryDataset):
         ]
 
     @property
-    def processed_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        """The name of the files in the :obj:`self.processed_dir` folder that
-        must be present in order to skip processing.
+    def processed_file_names(self) -> str:
+        """Name of the processed file saved in `self.processed_dir`.
+
+        Returns:
+            str: Name of the processed data file.
         """
         return "bnnhandata.pt"
 
     def download(self) -> None:
-        """Downloads the dataset to the :obj:`self.raw_dir` folder."""
-        print("Bypassed Downloading the dataset -- Using raw files @ GitHub Repo")
+        """Bypass the download process since raw data is locally available.
+
+        Note:
+            This method is overridden to avoid downloading because the raw data is expected to be present locally.
+        """
+        print(
+            "Bypassed downloading the dataset -- Using raw files from the local repository."
+        )
 
     def process(self) -> None:
-        """Processes the dataset to the :obj:`self.processed_dir` folder."""
+        """Processes the raw data files and constructs the `HeteroData` object.
 
+        This method reads node and edge CSV files, encodes features using the specified encoders,
+        constructs mappings, and builds the heterogeneous graph data object compatible with PyTorch Geometric.
+        """
         data = HeteroData()
         print("Processing the dataset")
         node_index_col: str = "ID"
@@ -197,29 +258,37 @@ class BNNHDataSet(InMemoryDataset):
         self.save([data], self.processed_paths[0])
 
     def __repr__(self) -> str:
+        """String representation of the dataset.
+
+        Returns:
+            str: Name of the dataset class.
+        """
         return f"{self.__class__.__name__}()"
 
     def _get_node(
         self,
         path: str,
         index_col: str,
-        encoders: Optional[Dict[str, Callable]] = None,
+        encoders: Optional[Dict[str, Callable[[pd.Series], torch.Tensor]]] = None,
     ) -> Tuple[Optional[torch.Tensor], Dict[int, int]]:
         """Processes node data from a CSV file.
 
         Args:
             path (str): Path to the CSV file.
             index_col (str): Column to use as the index.
-            encoders (Optional[Dict[str, Callable]], optional): Encoders for specific columns. Defaults to None.
+            encoders (Optional[Dict[str, Callable[[pd.Series], torch.Tensor]]], optional): A dictionary mapping column names to encoder functions that convert pandas Series to torch Tensors. Defaults to `None`.
 
         Returns:
             Tuple[Optional[torch.Tensor], Dict[int, int]]: Node features and mapping.
         """
 
         df = pd.read_csv(path, index_col=index_col)
-        mapping = {index: i for i, index in enumerate(df.index.unique())}
-        x = None
+        mapping: Dict[int, int] = {
+            index: i for i, index in enumerate(df.index.unique())
+        }
+        x: Optional[torch.Tensor] = None
         if encoders is not None:
+            # Encode specified columns and concatenate features
             xs = [encoder(df[col]) for col, encoder in encoders.items()]
             x = torch.cat(xs, dim=-1)
         return x, mapping
@@ -231,7 +300,7 @@ class BNNHDataSet(InMemoryDataset):
         src_mapping: Dict[int, int],
         dst_index_col: str,
         dst_mapping: Dict[int, int],
-        encoders: Optional[Dict[str, Callable]] = None,
+        encoders: Optional[Dict[str, Callable[[pd.Series], torch.Tensor]]] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """Processes edge data from a CSV file.
 
@@ -241,7 +310,7 @@ class BNNHDataSet(InMemoryDataset):
             src_mapping (Dict[int, int]): Mapping from original source node indices to new indices.
             dst_index_col (str): Column name for destination node indices.
             dst_mapping (Dict[int, int]): Mapping from original destination node indices to new indices.
-            encoders (Optional[Dict[str, Callable]], optional): Encoders for specific columns. Defaults to None.
+            encoders (Optional[Dict[str, Callable[[pd.Series], torch.Tensor]]], optional): Encoders for specific columns. Defaults to `None`.
 
         Returns:
             Tuple[torch.Tensor, Optional[torch.Tensor]]: Edge indices and edge attributes.
@@ -249,27 +318,29 @@ class BNNHDataSet(InMemoryDataset):
 
         df = pd.read_csv(path)
 
+        # Map original indices to new sequential indices for source and destination nodes
         src = [src_mapping[index] for index in df[src_index_col]]
         dst = [dst_mapping[index] for index in df[dst_index_col]]
-        edge_index = torch.tensor([src, dst])
-        edge_attr = None
+        edge_index = torch.tensor([src, dst], dtype=torch.long)
+
+        edge_attr: Optional[torch.Tensor] = None
         if encoders is not None:
+            # Encode specified columns and concatenate edge attributes
             edge_attrs = [encoder(df[col]) for col, encoder in encoders.items()]
             edge_attr = torch.cat(edge_attrs, dim=-1)
         return edge_index, edge_attr
 
     def _get_labels(self, path: str) -> torch.Tensor:
-        """Reads labels from a CSV file and returns them as a tensor.
+        """Loads node labels from a CSV file.
 
         Args:
             path (str): Path to the CSV file containing labels.
 
         Returns:
-            torch.Tensor: Tensor containing the labels.
+            torch.Tensor: Tensor containing the labels for SUBJECT nodes.
         """
         df = pd.read_csv(path, index_col="subjectId")
-        col = "label"
-        y = torch.tensor(df[col].values, dtype=torch.long)
+        y = torch.tensor(df["label"].values, dtype=torch.long)
         return y
 
     def _get_train_test_val_mask(

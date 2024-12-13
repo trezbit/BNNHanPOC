@@ -5,54 +5,76 @@ from model.dataset import BNNHDataSet
 from model.han import BNNHANPOC
 from config.includes import BNNHDSDIR
 
-def build_dataset(params):
-    '''PyTorch Geometry GNN dataset build utils'''
-    print("PyTorch Geometry BNNHDataSet dataset build utils:", params)
-    if params == '{}':
-        db = BNNHDataSet(root=BNNHDSDIR)
-        print("BNNHDataSet:", db._data)
-    else:
-        print("Unknown option for PyTorch Geometry BNNHDataSet dataset build utils")
 
-def run_poc(params):
-    '''PyTorch Geometry GNN POC demos'''
-    print("PyTorch Geometry POC demos with BNNHDataSet:", params)
-    if params == '{}':
-        poc = BNNHANPOC()
-        poc.run()
-    else:
-        print("Unknown option for PyTorch Geometry POC demos with BNNHDataSet")
+def build_dataset() -> None:
+    """PyTorch Geometry GNN dataset build utils"""
+    print("PyTorch Geometry BNNHDataSet dataset build utils")
+    db = BNNHDataSet(root=BNNHDSDIR)
+    # print("BNNHDataSet:", db._data)
 
-def parse_args():
+
+def run_poc() -> None:
+    """PyTorch Geometry GNN POC demos"""
+    print("PyTorch Geometry POC demo with BNNHDataSet")
+    poc = BNNHANPOC()
+    poc.run()
+
+
+def parse_args() -> argparse.Namespace:
     """CLI Argument parser for the application"""
     parser = argparse.ArgumentParser(description="BNN HAN Model POC Demo Utilities")
-    subparser = parser.add_subparsers(dest="command")
+    subparser = parser.add_subparsers(dest="command", required=True)
 
     tester = subparser.add_parser("demo", help="BRAINGNNet POC/demos")
-    builder = subparser.add_parser("build", help="BNNHDS Hetero DataSet build utilities")
-    builder.add_argument('--show', help='BNNDDS Hetero Dataset from raw data', nargs="?", const="{}", type=str, required=False)
+    builder = subparser.add_parser(
+        "build", help="BNNHDS Hetero DataSet build utilities"
+    )
+    builder.add_argument(
+        "--show",
+        help="BNNDDS Hetero Dataset from raw data",
+        nargs="?",
+        default=False,
+        const=True,
+        type=bool,
+    )
 
-    convertgroup1 = tester.add_mutually_exclusive_group(required=True)
-    convertgroup1.add_argument("--base", help="Node-Classification HAN implementation Demo", nargs="?", const="{}", type=str)
-    convertgroup1.add_argument("--adv", help="[Enhanced] HAN implementation Demo", nargs="?", const="{}", type=str)
+    tester_group = tester.add_mutually_exclusive_group(required=True)
+    tester_group.add_argument(
+        "--base",
+        help="Node-Classification HAN implementation Demo",
+        nargs="?",
+        default=False,
+        const=True,
+        type=bool,
+    )
+    tester_group.add_argument(
+        "--adv",
+        help="[Enhanced] HAN implementation Demo",
+        nargs="?",
+        default=False,
+        const=True,
+    )
 
     args = parser.parse_args()
     return args
 
 
-def run_session(args):
-    """Run session for the application"""
-    # pprint.pprint(args)
-    if args.command is None:
-        print("Undefined utility command. Options: demo, build")
-    elif args.command == "demo" and args.base is not None:
-        run_poc(args.base)
-    elif args.command == "demo" and args.adv is not None:
-        print("Currently unimplemented:", args.adv)
-    elif args.command == "build" and args.show is not None:
-        build_dataset(args.show)
+def run_session(args: argparse.Namespace) -> None:
+    """Run session for the application
+
+    Args:
+        args (argparse.Namespace): CLI arguments
+    """
+    if args.command == "demo":
+        if args.base is not None:
+            run_poc()
+        if args.adv is not None:
+            print("Currently unimplemented:")
+    elif args.command == "build":
+        build_dataset()
     else:
-        print("Unknown command option for POC: ", args.command)
+        raise ValueError("Unknown command option for POC: ", args.command)
+
     print("\nEnd of demo session...", args.command)
 
 
